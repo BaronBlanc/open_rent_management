@@ -16,7 +16,7 @@ This is a FastAPI project for managing properties.
     ```
 3. Create an env file and customize variables
     ```bash
-    cp .evn.sample .env
+    cp .env.sample .env
     ```
 
 ## Running the app
