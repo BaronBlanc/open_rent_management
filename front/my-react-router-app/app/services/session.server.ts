@@ -2,7 +2,7 @@
 
 import { createCookieSessionStorage, redirect } from "react-router";
 import axios from 'axios';
-import type { BearerToken, UserTokenInformation } from "~/Model/bearer-token";
+import type { BearerToken, UserTokenInformation } from "~/model/bearer-token";
 import type { ActionArgs } from "react-router";
 
 const axiosInstance = axios.create({
