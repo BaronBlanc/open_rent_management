@@ -6,6 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "lint": "eslint app --ext .ts,.tsx",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {

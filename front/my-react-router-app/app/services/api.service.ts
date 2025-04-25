@@ -20,7 +20,6 @@ export async function fetchData(request: Request, path: string) {
   }).catch(async (error) => {
     if (error.response && error.response.status === 401) {
       if (cookie && cookie.refreshToken) {
-        console.log("Refreshing token...", cookie.refreshToken);
         try {
           const response = await axiosInstance.post(`/refresh?refresh_token=${cookie.refreshToken}`);
           const newAccessToken = response.data.access_token;
