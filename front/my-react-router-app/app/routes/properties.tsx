@@ -2,6 +2,7 @@ import { Link, type MetaFunction } from "react-router";
 import { redirect } from "react-router";
 import type * as Route from "./+types.home";
 import { getUserTokenInformation } from "~/services/session.service";
+import { getProperties } from "~/services/properties.service";
 
 export const meta: MetaFunction = () => {
   return [
@@ -13,6 +14,7 @@ export const meta: MetaFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
   // Check if the user is already logged in
   const userTokenData = await getUserTokenInformation(request);
+  const properties = await getProperties(request);
   if (!userTokenData) {
     throw redirect("/login");
   } else {

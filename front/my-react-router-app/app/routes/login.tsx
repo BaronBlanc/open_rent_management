@@ -1,8 +1,9 @@
 import { Form, redirect, type MetaFunction } from "react-router";
 import type * as Route from "./+types.login";
-import { createSession, getUserTokenInformation, login } from "~/services/session.server";
+import { createUserSession, getUserTokenInformation, login } from "~/services/session.service";
 import Input from "~/components/input";
 import Button from "~/components/button";
+import type { BearerToken } from "~/model/bearer-token";
 
 export const meta: MetaFunction = () => {
     return [
@@ -27,8 +28,8 @@ export async function action({ request }: Route.ActionArgs) {
   const loginResponse = await login(username, password);
 
   if (loginResponse?.status === 200 && loginResponse.data) {
-    const tokenData = loginResponse.data;
-    const sessionResponse = await createSession({ request }, username, tokenData);
+    const tokenData: BearerToken = loginResponse.data;
+    const sessionResponse = await createUserSession(request, username, tokenData);
 
     if ("error" in sessionResponse) {
       return { error: sessionResponse.error };

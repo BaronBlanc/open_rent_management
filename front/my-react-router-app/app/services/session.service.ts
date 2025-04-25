@@ -1,28 +1,9 @@
 // app/services/session.server.ts
 
 import { createCookieSessionStorage, redirect } from "react-router";
-import axios from 'axios';
 import type { BearerToken, UserTokenInformation } from "~/model/bearer-token";
 import type { ActionArgs } from "react-router";
-
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // Replace with your API base URL
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-
-axiosInstance.interceptors.request.use(async config => {
-  const cookie = config.headers['Cookie'];
-  if(cookie) {
-    const tokenInfo = await getUserTokenInformation(cookie);
-    if (tokenInfo?.token) {
-      config.headers['Authorization'] = `Bearer ${tokenInfo.token}`;
-    }
-  }
-  return config;
-});
+import axiosInstance from "./axios.service";
 
 /**
  * Creates a cookie-based session storage.
@@ -52,10 +33,6 @@ async function getUserSession(request: Request) {
 
 export async function login(username: string, password: string) {
   try {
-    // const data = qs.stringify({
-    //   username,
-    //   password,
-    // });
     return await axiosInstance.post('/token', {username,
       password}, {
       headers: {
@@ -81,7 +58,6 @@ export async function login(username: string, password: string) {
  * @returns {Promise<Response>} Redirect response after logout.
  */
 export async function logout(request: Request) {
-  console.log("logout");
   const session = await getUserSession(request);
   return redirect("/", {
     headers: {
@@ -124,19 +100,13 @@ export async function getUserTokenInformation(
  * @param {string} [params.redirectUrl] - The URL to redirect to after creating the session.
  * @returns {Promise<Response>} Redirect response with the new session cookie.
  */
-export async function createUserSession({
-  request,
-  userId,
-  tokenData,
-  remember = true,
-  redirectUrl,
-}: {
-  request: Request;
-  userId: string;
+export async function createUserSession(
+  request: Request,
+  userId: string,
   tokenData: BearerToken,
-  remember: boolean;
-  redirectUrl?: string;
-}) {
+  remember = true,
+  redirectUrl?: string,
+) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
   session.set("token", tokenData.token);
@@ -154,26 +124,4 @@ export async function createUserSession({
       }),
     },
   });
-}
-
-
-export async function createSession({ request }: ActionArgs, userId: string, tokenData: BearerToken) {
-  let response: Response;
-  try {
-    response = await createUserSession({
-    request,
-    userId,
-    tokenData,
-    remember: true,
-  });
-    if (!response) {
-      throw new Error("An error occurred while creating the session");
-    }
-    return response; 
-  } catch (error) {
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-    return { error: "An unknown error occurred" };
-  }
 }

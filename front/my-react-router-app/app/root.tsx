@@ -11,7 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Header from "./components/header";
-import { getUserTokenInformation } from "./services/session.server";
+import { getUserTokenInformation } from "./services/session.service";
 import Menu from "./components/menu";
 
 export const links: Route.LinksFunction = () => [

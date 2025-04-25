@@ -1,7 +1,7 @@
 import { type MetaFunction } from "react-router";
 import { redirect } from "react-router";
 import type * as Route from "./+types.logout";
-import { logout } from "../services/session.server";
+import { logout } from "../services/session.service";
 
 /**
  * Defines metadata for the logout route.
