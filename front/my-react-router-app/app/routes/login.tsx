@@ -41,20 +41,20 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function Login({ actionData }: Route.ComponentProps) {
   return (
-    <div className="p-8 min-w-3/4 w-96">
-      <h1 className="text-2xl">Rental manager: Login</h1>
-      <Form method="post" className="mt-6 ">
-        <div className="flex flex-col gap-2">
+    <div className="container mx-auto p-4 flex justify-center">
+      <Form method="post" className="mt-6">
+        <div className="flex flex-col gap-5">
+          <h1 className="text-2xl">Login or subscribe</h1>
           <div className="flex flex-row">
             <label className="min-w-24 ">Username:</label>
-            <input className="flex-1" type="text" name="email" />
+            <input className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-300 ease-in-out" type="text" name="email" />
           </div>
           <div className="flex flex-row">
             <label className="min-w-24 ">Password:</label>
-            <input className="flex-1" type="password" name="password" />
+            <input className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-300 ease-in-out" type="password" name="password" />
           </div>
-          <div className="flex flex-row-reverse mt-4">
-            <button type="submit" className="border rounded px-2.5 py-1 w-32">
+          <div className="flex flex-row">
+            <button type="submit" className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-500 transition duration-300 ease-in-out">
               Login
             </button>
           </div>

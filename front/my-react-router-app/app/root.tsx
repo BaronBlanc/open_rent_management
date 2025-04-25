@@ -32,10 +32,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
-        {children}
+      <body className="min-h-screen flex flex-col">
+        <header className="bg-gray-800 text-white p-4">
+          <nav className="container mx-auto">
+            <h1 className="text-2xl">Rental Manager</h1>
+          </nav>
+        </header>
+        <main className="container mx-auto flex-grow">{children}</main>
         <ScrollRestoration />
         <Scripts />
+        <footer className="bg-gray-800 text-white p-4">
+          <nav className="container mx-auto p-4">
+            <p>&copy; 2025 Rental Manager</p>
+          </nav>
+        </footer>
       </body>
     </html>
   );
