@@ -1,7 +1,7 @@
 import { Form, Link, type MetaFunction } from "react-router";
-import { getUserId } from "~/services/session.server";
 import { redirect } from "react-router";
 import type * as Route from "./+types.home";
+import { getUserTokenInformation } from "~/services/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,11 +12,12 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Check if the user is already logged in
-  const userId = await getUserId(request);
-  if (!userId) {
+  const userTokenData = await getUserTokenInformation(request);
+  console.log("userTokenData", userTokenData);
+  if (!userTokenData) {
     throw redirect("/login");
   } else {
-    return { userId };
+    return { userTokenData };
   }
 }
 

@@ -1,9 +1,22 @@
 // app/services/session.server.ts
 
 import { createCookieSessionStorage, redirect } from "react-router";
+import axios from 'axios';
+import type { BearerToken, UserTokenInformation } from "~/Model/bearer-token";
+import type { ActionArgs } from "react-router";
 
-/** Represents a user in the system */
-type User = { id: string; username: string; password: string };
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8000/api/v1', // Replace with your API base URL
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Example of setting a default token
+// axiosInstance.interceptors.request.use(config => {
+//   config.headers['Authorization'] = `Bearer ${getUserTokenInformation(config).token}`;
+//   return config;
+// });
 
 /**
  * Creates a cookie-based session storage.
@@ -27,8 +40,33 @@ export const { commitSession, destroySession } = sessionStorage;
  * @param {Request} request - The incoming request.
  * @returns {Promise<Session>} The user session.
  */
-const getUserSession = async (request: Request) => {
+async function getUserSession(request: Request) {
   return await sessionStorage.getSession(request.headers.get("Cookie"));
+};
+
+export async function login(username: string, password: string) {
+  try {
+    // const data = qs.stringify({
+    //   username,
+    //   password,
+    // });
+    return await axiosInstance.post('/token', {username,
+      password}, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }).then(response => {
+      response.data = {
+        token: response.data.access_token,
+        refreshToken: response.data.refresh_token,
+        type: response.data.token_type,
+      };
+      return response;
+    });
+  } catch (error) {
+    // Handle error
+    console.error('Login failed', error);
+  }
 };
 
 /**
@@ -49,16 +87,24 @@ export async function logout(request: Request) {
 const USER_SESSION_KEY = "userId";
 
 /**
- * Retrieves the user ID from the session.
+ * Retrieves the user token information from the session.
  * @param {Request} request - The incoming request.
- * @returns {Promise<string | undefined>} The user ID if found, undefined otherwise.
+ * @returns {Promise<BearerToken | undefined>} The BearerToken object if found, undefined otherwise.
  */
-export async function getUserId(
+export async function getUserTokenInformation(
   request: Request
-): Promise<User["id"] | undefined> {
+): Promise<UserTokenInformation | undefined> {
   const session = await getUserSession(request);
+  const token = session.get("token");
+  const refreshToken = session.get("refreshToken");
   const userId = session.get(USER_SESSION_KEY);
-  return userId;
+  const type = session.get("type");
+
+  if (token && refreshToken) {
+    return { token, refreshToken, userId, type };
+  }
+
+  return undefined;
 }
 
 /**
@@ -73,16 +119,22 @@ export async function getUserId(
 export async function createUserSession({
   request,
   userId,
+  tokenData,
   remember = true,
   redirectUrl,
 }: {
   request: Request;
   userId: string;
+  tokenData: BearerToken,
   remember: boolean;
   redirectUrl?: string;
 }) {
   const session = await getUserSession(request);
   session.set(USER_SESSION_KEY, userId);
+  session.set("token", tokenData.token);
+  session.set("refreshToken", tokenData.refreshToken);
+  session.set("type", tokenData.type);
+  console.log("session", session.data);
   return redirect(redirectUrl || "/", {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -95,4 +147,26 @@ export async function createUserSession({
       }),
     },
   });
+}
+
+
+export async function createSession({ request }: ActionArgs, userId: string, tokenData: BearerToken) {
+  let response: Response;
+  try {
+    response = await createUserSession({
+    request,
+    userId,
+    tokenData,
+    remember: true,
+  });
+    if (!response) {
+      throw new Error("An error occurred while creating the session");
+    }
+    return response; 
+  } catch (error) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "An unknown error occurred" };
+  }
 }
