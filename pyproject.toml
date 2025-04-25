@@ -91,6 +91,7 @@ uvicorn = "^0.34.0"
 virtualenv = "^20.29.3"
 zstandard = "^0.23.0"
 pre-commit = "^4.1.0"
+pyyaml = "^6.0.2"
 
 [tool.poetry.group.ci.dependencies]
 black = "^23.9.1"
@@ -105,6 +106,10 @@ types-paramiko = "^3.3.0.0"
 mypy-extensions = "^1.0.0"
 pytest-asyncio = "^0.21.1"
 pytest-mock = "^3.11.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

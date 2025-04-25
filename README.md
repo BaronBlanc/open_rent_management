@@ -8,6 +8,10 @@ This is a FastAPI project for managing properties.
     ```bash
     curl -sSL https://install.python-poetry.org | python3 -
     ```
+    or you can use
+    ```bash
+    pip install poetry
+    ```
 2. Check for Virtual Environment
     ```bash
     poetry env list
@@ -16,12 +20,6 @@ This is a FastAPI project for managing properties.
     ```bash
     poetry install
     ```
-
-3. Activate the Virtual Environment
-    ```bash
-    poetry shell
-    ```
-    If `poetry shell` works, you don't need to use `poetry env activate` directly.
 
 4. Create an env file and customize variables
     ```bash
