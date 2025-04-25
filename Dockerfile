@@ -1,6 +1,6 @@
-FROM python:3.12-slim as builder
+FROM python:3.12.9-slim as builder
 
-RUN pip install poetry==2.1.1
+RUN pip install poetry==2.1.2
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR \
     && poetry build \
     && poetry run pip install dist/*.whl
 
-FROM python:3.12-slim as runtime
+FROM python:3.12.9-slim as runtime
 
 
 RUN apt-get update \
