@@ -12,11 +12,17 @@ const axiosInstance = axios.create({
   },
 });
 
-// Example of setting a default token
-// axiosInstance.interceptors.request.use(config => {
-//   config.headers['Authorization'] = `Bearer ${getUserTokenInformation(config).token}`;
-//   return config;
-// });
+
+axiosInstance.interceptors.request.use(async config => {
+  const cookie = config.headers['Cookie'];
+  if(cookie) {
+    const tokenInfo = await getUserTokenInformation(cookie);
+    if (tokenInfo?.token) {
+      config.headers['Authorization'] = `Bearer ${tokenInfo.token}`;
+    }
+  }
+  return config;
+});
 
 /**
  * Creates a cookie-based session storage.
@@ -95,13 +101,15 @@ export async function getUserTokenInformation(
   request: Request
 ): Promise<UserTokenInformation | undefined> {
   const session = await getUserSession(request);
-  const token = session.get("token");
-  const refreshToken = session.get("refreshToken");
-  const userId = session.get(USER_SESSION_KEY);
-  const type = session.get("type");
+  if(session.data) {
+    const token = session.get("token");
+    const refreshToken = session.get("refreshToken");
+    const userId = session.get(USER_SESSION_KEY);
+    const type = session.get("type");
 
-  if (token && refreshToken) {
-    return { token, refreshToken, userId, type };
+    if (token && refreshToken) {
+      return { token, refreshToken, userId, type };
+    }
   }
 
   return undefined;
