@@ -29,26 +29,26 @@ services:
       - 5050:80
     networks:
       - property_manager-network
-  # python-app:
-  #   build:
-  #     dockerfile: Dockerfile
-  #   container_name: property_manager
-  #   ports:
-  #     - 8000:8000
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - property_manager-network
-  #   environment:
-  #     - PG_DB=${PG_DB}
-  #     - PG_USER=${PG_USER}
-  #     - PG_PASSWORD=${PG_PASSWORD}
-  #     - PG_HOST=postgres
-  #     - PG_PORT=5432
-  #     - SECRET_KEY=${SECRET_KEY}
-  #     - ALGORITHM=${ALGORITHM}
-  #     - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-  #     - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS}
+  python-app:
+    build:
+      dockerfile: Dockerfile
+    container_name: property_manager
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    networks:
+      - property_manager-network
+    environment:
+      - PG_DB=${PG_DB}
+      - PG_USER=${PG_USER}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS}
 networks:
   property_manager-network:
     driver: bridge
