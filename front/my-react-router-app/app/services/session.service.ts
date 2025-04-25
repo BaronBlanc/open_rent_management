@@ -1,8 +1,7 @@
 // app/services/session.server.ts
 
 import { createCookieSessionStorage, redirect } from "react-router";
-import type { BearerToken, UserTokenInformation } from "~/model/bearer-token";
-import type { ActionArgs } from "react-router";
+import type { BearerToken } from "~/model/bearer-token";
 import axiosInstance from "./axios.service";
 
 /**
@@ -20,6 +19,10 @@ export const sessionStorage = createCookieSessionStorage({
   },
 });
 
+const USER_SESSION_KEY = "userId";
+const ACCESS_TOKEN = "accessToken";
+const REFRESH_TOKEN = "refreshToken";
+
 export const { commitSession, destroySession } = sessionStorage;
 
 /**
@@ -27,64 +30,41 @@ export const { commitSession, destroySession } = sessionStorage;
  * @param {Request} request - The incoming request.
  * @returns {Promise<Session>} The user session.
  */
-async function getUserSession(request: Request) {
+async function getUserCookie(request: Request) {
   return await sessionStorage.getSession(request.headers.get("Cookie"));
 };
 
-export async function login(username: string, password: string) {
-  try {
-    return await axiosInstance.post('/token', {username,
-      password}, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }).then(response => {
-      response.data = {
-        token: response.data.access_token,
-        refreshToken: response.data.refresh_token,
-        type: response.data.token_type,
-      };
-      return response;
-    });
-  } catch (error) {
-    // Handle error
-    console.error('Login failed', error);
-  }
-};
-
 /**
- * Logs out the user by destroying their session.
+ * Retrieves the user id information from the session.
  * @param {Request} request - The incoming request.
- * @returns {Promise<Response>} Redirect response after logout.
+ * @returns {Promise<string | undefined>} The BearerToken object if found, undefined otherwise.
  */
-export async function logout(request: Request) {
-  const session = await getUserSession(request);
-  return redirect("/", {
-    headers: {
-      "Set-Cookie": await sessionStorage.destroySession(session),
-    },
-  });
+export async function getUserId(
+  request: Request
+): Promise<string | undefined> {
+  const session = await getUserCookie(request);
+  if(session.data) {
+    return session.get(USER_SESSION_KEY);
+  }
+  return undefined;
 }
-
-const USER_SESSION_KEY = "userId";
 
 /**
  * Retrieves the user token information from the session.
  * @param {Request} request - The incoming request.
  * @returns {Promise<BearerToken | undefined>} The BearerToken object if found, undefined otherwise.
  */
-export async function getUserTokenInformation(
+export async function getCookieInformation(
   request: Request
-): Promise<UserTokenInformation | undefined> {
-  const session = await getUserSession(request);
+): Promise<BearerToken | undefined> {
+  const session = await getUserCookie(request);
   if(session.data) {
-    const token = session.get("token");
-    const refreshToken = session.get("refreshToken");
+    const refreshToken = session.get(ACCESS_TOKEN);
+    const accessToken = session.get(REFRESH_TOKEN);
     const userId = session.get(USER_SESSION_KEY);
-    const type = session.get("type");
 
-    if (token && refreshToken) {
-      return { token, refreshToken, userId, type };
+    if (refreshToken) {
+      return { refreshToken, userId, accessToken };
     }
   }
 
@@ -107,11 +87,10 @@ export async function createUserSession(
   remember = true,
   redirectUrl?: string,
 ) {
-  const session = await getUserSession(request);
+  const session = await getUserCookie(request);
   session.set(USER_SESSION_KEY, userId);
-  session.set("token", tokenData.token);
-  session.set("refreshToken", tokenData.refreshToken);
-  session.set("type", tokenData.type);
+  session.set(ACCESS_TOKEN, tokenData.accessToken);
+  session.set(REFRESH_TOKEN, tokenData.refreshToken);
   return redirect(redirectUrl || "/", {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -123,5 +102,35 @@ export async function createUserSession(
           : undefined,
       }),
     },
+  });
+}
+
+export async function login(username: string, password: string) {
+  try {
+      return await axiosInstance.post('/token', {username,
+      password}, {
+      headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+      },
+      }).then(response => {
+      response.data = {
+        accessToken: response.data.access_token,
+        refreshToken: response.data.refresh_token,
+        type: response.data.token_type,
+      };
+      return response;
+      });
+  } catch (error) {
+      // Handle error
+      console.error('Login failed', error);
+  }
+}
+
+export async function logout(request: Request) {
+  const session = await getUserCookie(request);
+  return redirect("/", {
+      headers: {
+      "Set-Cookie": await sessionStorage.destroySession(session),
+      },
   });
 }

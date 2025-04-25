@@ -65,12 +65,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-  if (!loaderData || !Array.isArray(loaderData)) {
-    return <div className="container mx-auto gap-2 flex flex-row">  
-      <div className="text-2xl p-4">No tenant available ! Add one here below:  </div>
-    </div>
-  }
-
   return (
     <div>
       {loaderData? (

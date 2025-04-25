@@ -2,19 +2,17 @@ import { Form } from "react-router";
 import Button from "./button";
 
 interface HeaderProps {
-  userTokenData?: {
-    userId?: string;
-  };
+  userId?: string; // Allow userId to be undefined
 }
 
-export default function Header({ userTokenData }: HeaderProps) {
+export default function Header(prop: HeaderProps) {
   return (
     <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
       <nav className="container mx-auto">
         <h1 className="text-2xl">Rental Manager</h1>
       </nav>
       <nav className="container mx-auto flex justify-end">
-        {userTokenData?.userId ? (
+        {prop?.userId ? (
           <Form action="/logout" method="post">
             <Button
               type="submit"

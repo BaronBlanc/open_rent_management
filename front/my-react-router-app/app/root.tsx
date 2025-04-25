@@ -11,7 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Header from "./components/header";
-import { getUserTokenInformation } from "./services/session.service";
+import { getUserId } from "./services/session.service";
 import Menu from "./components/menu";
 
 export const links: Route.LinksFunction = () => [
@@ -28,12 +28,12 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userTokenData = await getUserTokenInformation(request);
-  return {userTokenData};
+  const userId = await getUserId(request);
+  return userId;
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { userTokenData } = useLoaderData<typeof loader>();
+  const userId  = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -43,9 +43,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Header userTokenData={userTokenData} />
+        <Header userId={userId} />
         <div className="container mx-auto flex-grow flex flex-row">
-          {userTokenData?.token && <Menu />}
+          {userId && <Menu />}
           <main className="container mx-auto flex-grow">{children}</main>
         </div>
         <ScrollRestoration />
@@ -61,7 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return  <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

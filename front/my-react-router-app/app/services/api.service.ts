@@ -1,8 +1,40 @@
 import type { Property } from "~/model/property";
 import axiosInstance from "./axios.service";
-import { getUserTokenInformation } from "./session.service";
 import type { Tenant } from "~/model/tenant";
+import { getCookieInformation, logout } from "./session.service";
 
+
+async function setAuthorizationHeader(request: Request) {
+  const cookie = await getCookieInformation(request);
+  if (cookie) {
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${cookie.accessToken}`;
+  }
+}
+
+export async function fetchData(request: Request, path: string) {
+  setAuthorizationHeader(request);
+  const cookie = await getCookieInformation(request);
+
+  return await axiosInstance.get(path).then((response) => {
+    return response.data;
+  }).catch(async (error) => {
+    if (error.response && error.response.status === 401) {
+      if (cookie && cookie.refreshToken) {
+        console.log("Refreshing token...", cookie.refreshToken);
+        try {
+          const response = await axiosInstance.post(`/refresh?refresh_token=${cookie.refreshToken}`);
+          const newAccessToken = response.data.access_token;
+          error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          return axiosInstance.request(error.config);
+        } catch (refreshError) {
+          console.error("Error refreshing token:", refreshError);
+          return await logout(request);
+        }
+      }
+    }
+    throw error;
+  });
+}
 
 /// <summary>
 /// Get the list of properties.
@@ -11,7 +43,7 @@ import type { Tenant } from "~/model/tenant";
 /// <returns>A promise that resolves to an array of properties.</returns>
 /// <remarks>
 export async function getProperties(request: Request): Promise<Property[]> {
-  return await callApiAsync('/properties', ApiMethod.GET, null, request);
+  return await fetchData(request, `/properties`);
 }
 
 /// <summary>
@@ -21,54 +53,17 @@ export async function getProperties(request: Request): Promise<Property[]> {
 /// <returns>A promise that resolves to an array of tenants.</returns>
 /// <remarks>
 export async function getTenants(request: Request): Promise<Tenant[]> {
-  return await callApiAsync('/tenants', ApiMethod.GET, null, request);
+  setAuthorizationHeader(request);
+  return await fetchData(request, `/tenants`);
 }
 
 /// <summary>
-/// Enum for API methods.
+/// Get the list of tenants.
 /// </summary>
+/// <param name="request">The request object.</param>
+/// <returns>A promise that resolves to an array of tenants.</returns>
 /// <remarks>
-/// This enum defines the HTTP methods that can be used for API calls.
-/// It is used to specify the method when making API requests.
-/// </remarks>
-export enum ApiMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE',
-}
-
-/// <summary>
-/// Call the API asynchronously.
-/// </summary>
-/// <param name="url">The URL of the API endpoint.</param>
-/// <param name="method">The HTTP method to use (GET, POST, PUT, DELETE).</param>
-/// <param name="data">The data to send with the request (optional).</param>
-/// <param name="request">The request object (optional).</param>
-/// <returns>A promise that resolves to the response data.</returns>
-/// <remarks>
-/// This function uses the axiosInstance to make the API call.
-/// It automatically includes the authorization token in the request headers.
-/// It also handles errors and logs them to the console.
-/// </remarks>
-export async function callApiAsync(
-  url: string,
-  method: ApiMethod,
-  data: unknown = null,
-  request: Request
-) {
-  const tokenInfo = await getUserTokenInformation(request);
-  return await axiosInstance({
-    url,
-    method,
-    data,
-    headers: { 'Authorization': `Bearer ${tokenInfo?.token}` },
-    withCredentials: true
-  })
-  .then(response => {
-      return response.data;
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
-    });
+export async function getPropertyId(request: Request, tenantId: string): Promise<Property[]> {
+  setAuthorizationHeader(request);
+  return await axiosInstance.get(`/property/${tenantId}`);
 }

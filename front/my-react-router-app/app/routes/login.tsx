@@ -1,6 +1,6 @@
 import { Form, redirect, type MetaFunction } from "react-router";
 import type * as Route from "./+types.login";
-import { createUserSession, getUserTokenInformation, login } from "~/services/session.service";
+import { createUserSession, getUserId, login } from "~/services/session.service";
 import Input from "~/components/input";
 import Button from "~/components/button";
 import type { BearerToken } from "~/model/bearer-token";
@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Check if the user is already logged in
-  const userTokenData = await getUserTokenInformation(request);
+  const userTokenData = await getUserId(request);
   if (userTokenData) {
     return redirect("/");
   }

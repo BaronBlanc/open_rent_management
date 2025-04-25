@@ -1,7 +1,7 @@
 import { Link, type MetaFunction } from "react-router";
 import { redirect } from "react-router";
 import type * as Route from "./+types.home";
-import { getUserTokenInformation } from "~/services/session.service";
+import { getUserId } from "~/services/session.service";
 import { getProperties } from "~/services/api.service";
 import DataTable from "~/components/datatable";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -36,12 +36,16 @@ const columns = [
     id: 'date_updated',
     cell: info => info.getValue(),
     header: () => <span>Date update</span>,
-  }),
+  })
+  // columnHelper.accessor(row => row.id, {
+  //   id: 'date_updated',
+  //   cell: info => <Link to={`/properties/${info.getValue()}`}>Details</Link>,
+  // }),
 ]
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Check if the user is already logged in
-  const userTokenData = await getUserTokenInformation(request);
+  const userTokenData = await getUserId(request);
   if (!userTokenData) {
     throw redirect("/login");
   } else {
@@ -50,9 +54,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
+  if (!loaderData || !Array.isArray(loaderData)) {
+    return <div className="container mx-auto gap-2 flex flex-row">  
+      <div className="text-2xl p-4">No property available ! Add one here below:  </div>
+    </div>
+  }
+  
   return (
     <div>
-      {loaderData? (
+      {loaderData?  (
         <div className="container mx-auto gap-2 flex flex-row">  
           <h1 className="text-2xl p-4">Welcome TOTO to Rental manager application</h1>
         </div>
