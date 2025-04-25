@@ -12,6 +12,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import Header from "./components/header";
 import { getUserTokenInformation } from "./services/session.server";
+import Menu from "./components/menu";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -43,7 +44,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen flex flex-col">
         <Header userTokenData={userTokenData} />
-        <main className="container mx-auto flex-grow">{children}</main>
+        <div className="container mx-auto flex-grow flex flex-row">
+          {userTokenData?.token && <Menu />}
+          <main className="container mx-auto flex-grow">{children}</main>
+        </div>
         <ScrollRestoration />
         <Scripts />
         <footer className="bg-gray-800 text-white p-4">
