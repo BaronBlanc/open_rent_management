@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.auth import get_auth_service, get_current_active_user, get_http_auth_exception, get_user_service
 from app.core.dependencies import get_db
 from app.models.auth_errors import AuthError
 from app.models.user import User
-from app.schemas.token import RefreshToken, Token
+from app.schemas.token import RefreshToken
 from app.schemas.user_create import UserCreate
 from app.schemas.user_response import UserResponse
 from app.services.authentication_service import AuthenticationService
@@ -22,24 +23,58 @@ router = APIRouter()
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     auth_service: AuthenticationService = Depends(get_auth_service),
-) -> Token:
+):
     try:
         user = auth_service.authenticate_user(form_data.username, form_data.password)
         if not user:
             raise get_http_auth_exception(
                 status_code=status.HTTP_401_UNAUTHORIZED, message=AuthError.INVALID_CREDENTIALS
             )
-        return auth_service.login(user.email)
+        auth_object = auth_service.login(user.email)
+        response = JSONResponse(auth_object.model_dump())
+        response.set_cookie(
+            key="refreshToken",
+            value=auth_object.refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        response.set_cookie(
+            key="accessToken",
+            value=auth_object.refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        return response
     except Exception as e:
         raise get_http_auth_exception(status_code=status.HTTP_401_UNAUTHORIZED, message=str(e))
 
 
 @router.post("/refresh", response_model=RefreshToken)
 async def refresh_access_token(
-    refresh_token: str, auth_service: AuthenticationService = Depends(get_auth_service)
-) -> RefreshToken:
+    request: Request, refresh_token: str, auth_service: AuthenticationService = Depends(get_auth_service)
+):
     try:
-        return auth_service.refresh_access_token(refresh_token)
+        if refresh_token == "":
+            refresh_token = request.cookies.get("refreshToken", "")
+        refresh_token_object = auth_service.refresh_access_token(refresh_token)
+        response = JSONResponse(refresh_token_object.model_dump())
+        response.set_cookie(
+            key="refreshToken",
+            value=refresh_token_object.refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        response.set_cookie(
+            key="accessToken",
+            value=refresh_token_object.refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        return response
     except Exception as e:
         raise get_http_auth_exception(status_code=status.HTTP_401_UNAUTHORIZED, message=str(e))
 
