@@ -142,7 +142,6 @@ export async function createUserSession({
   session.set("token", tokenData.token);
   session.set("refreshToken", tokenData.refreshToken);
   session.set("type", tokenData.type);
-  console.log("session", session.data);
   return redirect(redirectUrl || "/", {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {

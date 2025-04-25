@@ -5,10 +5,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import Header from "./components/header";
+import { getUserTokenInformation } from "./services/session.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,7 +26,13 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const userTokenData = await getUserTokenInformation(request);
+  return {userTokenData};
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { userTokenData } = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -33,11 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen flex flex-col">
-        <header className="bg-gray-800 text-white p-4">
-          <nav className="container mx-auto">
-            <h1 className="text-2xl">Rental Manager</h1>
-          </nav>
-        </header>
+        <Header userTokenData={userTokenData} />
         <main className="container mx-auto flex-grow">{children}</main>
         <ScrollRestoration />
         <Scripts />
