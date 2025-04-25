@@ -169,3 +169,17 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+.DS_Store
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+
+# Exclude build and node_modules only in the root directory
+/build/
+/front/my-react-router-app/build/
+/front/my-react-router-app/node_modules/
+/front/my-react-router-app/.react-router/
+/front/my-react-router-app/.DS_Store
