@@ -2,6 +2,7 @@ import { Form, redirect, type MetaFunction } from "react-router";
 import type * as Route from "./+types.login";
 import { createSession, getUserTokenInformation, login } from "~/services/session.server";
 import Input from "~/components/input";
+import Button from "~/components/button";
 
 export const meta: MetaFunction = () => {
     return [
@@ -63,9 +64,7 @@ export default function Login({ actionData }: Route.ComponentProps) {
                 required = {true}
               />
           <div className="flex flex-row">
-            <button type="submit" className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-500 transition duration-300 ease-in-out">
-              Login
-            </button>
+            <Button type="submit" label="Login" />
           </div>
           {actionData?.error ? (
             <div className="flex flex-row">
