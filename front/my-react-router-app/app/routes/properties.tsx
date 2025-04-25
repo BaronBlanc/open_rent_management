@@ -2,7 +2,7 @@ import { Link, type MetaFunction } from "react-router";
 import { redirect } from "react-router";
 import type * as Route from "./+types.home";
 import { getUserTokenInformation } from "~/services/session.service";
-import { getProperties } from "~/services/properties.service";
+import { getProperties } from "~/services/api.service";
 import DataTable from "~/components/datatable";
 import { createColumnHelper } from "@tanstack/react-table";
 import type { Property } from "~/model/property";
@@ -50,7 +50,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-  console.log("Loader data:", loaderData); // Debugging
   return (
     <div>
       {loaderData? (
